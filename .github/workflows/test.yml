@@ -1,0 +1,130 @@
+name: Build and Test
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    paths:
+        - 'opendataval/**'
+        - 'test/**'
+        - 'requirements**.txt'
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Runs Tests
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.9", "3.10", "3.11"]
+      max-parallel: 5
+
+    runs-on: ${{ matrix.os }}
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - uses: actions/cache@v4
+      with:
+        path: ${{ env.pythonLocation }}
+        key: ${{ env.pythonLocation }}-${{ hashFiles('requirements-dev.txt') }}
+    - name: Install dependencies
+      run: |
+        make install-dev
+    - name: Linting/formatting check
+      run: |
+        make format
+    - name: Test with pytest
+      run: |
+        echo ${{ matrix.os }}
+        echo ${{ matrix.python-version }}
+        make coverage
+    - name: Archive code coverage results
+      uses: actions/upload-artifact@v4
+      if: ${{(matrix.os == 'ubuntu-latest')  &&  (matrix.python-version == '3.11')}}
+      with:
+        name: code-coverage-report
+        path: coverage.xml
+        retention-days: 1
+
+  single_test:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged || github.event_name == 'workflow_dispatch'
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+    - name: Load cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.pythonLocation }}
+        key: ${{ env.pythonLocation }}-${{ hashFiles('requirements-dev.txt') }}
+    - name: Install dependencies
+      run: |
+        make install-dev
+    - name: Linting/formatting check
+      run: |
+        make format
+    - name: Test with pytest
+      run: |
+        make coverage
+    - name: Archive code coverage results
+      uses: actions/upload-artifact@v4
+      with:
+        name: code-coverage-report
+        path: coverage.xml
+        retention-days: 1
+
+  write_coverage:
+    name: Write Code Coverage
+    needs: [ test, single_test ]
+    if: |
+      always()
+      && contains(needs.*.result, 'success')
+      && !contains(needs.*.result, 'failure')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    outputs:
+      coverage: ${{ steps.commentCoverage.outputs.coverage }}
+      color: ${{ steps.commentCoverage.outputs.color }}
+    steps:
+    - name: Download Code Coverage
+      uses: actions/download-artifact@v4
+      with:
+        name: code-coverage-report
+    - name: Pytest coverage comment
+      id: commentCoverage
+      uses: MishaKav/pytest-coverage-comment@main
+      with:
+        pytest-xml-coverage-path: ./coverage.xml
+        badge-title: opendataval Coverage Badge
+        title: opendataval Coverage Report
+        hide-comment: false
+
+  commit_coverage:
+    name: Commit code coverage report
+    needs: [write_coverage]
+    runs-on: ubuntu-latest
+    if: |
+      always()
+      && contains(needs.*.result, 'success')
+      && !contains(needs.*.result, 'failure')
+      && github.event.pull_request.merged || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: write
+    steps:
+    - name: Commits badge
+      uses: kevinfjiang/coverage-badge@v1
+      with:
+          coverage: ${{ needs.write_coverage.outputs.coverage }}
+          color: ${{ needs.write_coverage.outputs.color }}
+          ref: ${{ github.event.pull_request.merged && github.base_ref || github.head_ref }}
+          change_file: ./README.md

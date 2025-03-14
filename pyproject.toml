@@ -1,0 +1,159 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# ========================================= #
+#                   PyPi                    #
+# ========================================= #
+
+[project]
+name = "opendataval"
+authors = [
+    {name = "Kevin Jiang", email = "kfj2112@columbia.edu"},
+    {name = "Weixin Liang", email = "wxliang@cs.stanford.edu"},
+    {name = "James Zou", email = "jamesz@stanford.edu"},
+    {name = "Yongchan Kwon", email = "yk3012@columbia.edu"},
+]
+description = "Transparent Data Valuation"
+readme = "README.md"
+requires-python = ">=3.9.0"
+keywords = ["Data Valuation", "Data Centric", "Machine Learning"]
+license = {text = "MIT"}
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development",
+    "Topic :: Scientific/Engineering",
+
+]
+dependencies = [  # versioning rules: https://peps.python.org/pep-0440/#version-specifiers
+    # Dependencies that we cap due to google colab compatibiity
+    "numpy~=1.26.4",
+    "pandas>=1.5.3,<2",
+    # Dependencies we only want bug updates, due to centrality to opendataval
+    "geomloss~=0.2.6",
+    "pandera~=0.19.3",
+    "pykeops~=2.1.2",
+    "torch~=2.2.2",
+    "torcheval~=0.0.7",
+    "torchvision~=0.17.2",
+    "typer~=0.9.0",
+    "tqdm~=4.66.3",
+    # Less central and allows for more flexibility
+    "matplotlib~=3.9",
+    "requests~=2.32.3",
+    "scipy~=1.11",
+    "scikit-learn~=1.3",
+    "transformers~=4.38"  # Transformers updates so fast so this is fine
+]
+dynamic = ["version"]
+
+[project.urls]
+Documentation = "https://opendataval.github.io"
+"Source code" = "https://github.com/opendataval/opendataval"
+
+[project.scripts]
+opendataval = "opendataval.__main__:cli"
+
+[project.optional-dependencies]
+dev = [
+    # Dev dependencies, only want that should be updated is ruff
+    "hatch~=1.14",
+    "pip-tools~=7.4",
+    "pre-commit~=4.1",
+    "ruff~=0.9.4",
+    "sphinx~=7.3"
+]
+test = [
+    "pytest~=7.2.2",
+    "pytest-cov~=4.0.0"
+]
+
+# ========================================= #
+#                 Building                  #
+# ========================================= #
+
+[tool.hatch]
+packages = ["opendataval"]
+
+[tool.hatch.version]
+path = "opendataval/__init__.py"
+
+[tool.hatch.build]
+include = [
+  "opendataval/**/*.py",
+  "test/**/*.py",
+  "LICENSE.txt",
+]
+
+skip-excluded-dirs = true
+
+# ========================================= #
+#                  Linting                  #
+# ========================================= #
+# https://docs.astral.sh/ruff/configuration/
+[tool.ruff]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "C90", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "F403", "E501"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.isort]
+known-first-party = ["opendataval"]
+known-third-party = [
+    "numpy",
+    "pandas",
+    "pandera",
+    "requests",
+    "scipy",
+    "sklearn",
+    "matplotlib",
+    "torch",
+    "torchvision",
+    "tqdm",
+    "transformers",
+    "typer",
+]
+
+[tool.ruff.lint.pycodestyle]
+ignore-overlong-task-comments = true
+
+# ========================================= #
+#                  Testing                  #
+# ========================================= #
+
+[tool.coverage.run]
+source = ["opendataval"]
+omit = ["opendataval/model/*", "opendataval/dataloader/datasets/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["test"]
