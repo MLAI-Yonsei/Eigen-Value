@@ -39,7 +39,6 @@ Catalog
     TMCSampler
     GrTMCSampler
 """
-
 from opendataval.dataval.ame import AME
 from opendataval.dataval.api import DataEvaluator, ModelLessMixin, ModelMixin
 from opendataval.dataval.csshap import ClassWiseShapley
@@ -47,7 +46,7 @@ from opendataval.dataval.dvrl import DVRL
 from opendataval.dataval.influence import InfluenceFunction, InfluenceSubsample
 from opendataval.dataval.knnshap import KNNShapley
 from opendataval.dataval.lava import LavaEvaluator
-from opendataval.dataval.lossval import LossValEvaluator
+from opendataval.dataval.singularLava import SingularLavaEvaluator
 from opendataval.dataval.margcontrib import (
     BetaShapley,
     DataBanzhaf,
@@ -62,3 +61,7 @@ from opendataval.dataval.margcontrib import (
 from opendataval.dataval.oob import DataOob
 from opendataval.dataval.random import RandomEvaluator
 from opendataval.dataval.volume import RobustVolumeShapley
+from opendataval.dataval.singularknnshap import singularKNNShapley
+from opendataval.dataval.weightsingularknnshap import weightsingularKNNShapley
+from opendataval.dataval.deviation import ModelDeviationEvaluator
+from opendataval.dataval.singularoob import singularDataOob, weightsingularDataOob

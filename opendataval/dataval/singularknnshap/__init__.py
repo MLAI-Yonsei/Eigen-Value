@@ -1,0 +1,2 @@
+from opendataval.dataval.singularknnshap.singularknnshap import singularKNNShapley
+# from opendataval.dataval.singularknnshap.weightsingularknnshap import weightsingularKNNShapley
