@@ -71,7 +71,9 @@ It is highly reccomended to use a virtual environment for `opendataval`. Check o
 <!-- USAGE EXAMPLES -->
 ## download dataset
 ----
-To utilize Eigen-Value data valuation, first download CIFAR 10 C, CIFAR 10 , VLCS in /data
+To utilize Eigen-Value data valuation, first download CIFAR 10 , VLCS in /data
+and download CIFAR 10 C in /data_files
+
 ## :zap: Quick Start
 ----
 To set up an experiment on DataEvaluators. Feel free to change the source code as needed for a project.
