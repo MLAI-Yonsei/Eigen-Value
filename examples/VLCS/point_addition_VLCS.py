@@ -223,7 +223,7 @@ if __name__ == "__main__":
 
         total = len(raw_train)
         indices = np.arange(total)
-        set_seed()  # 재현성을 위해 시드 설정
+        set_seed() 
         np.random.shuffle(indices)
 
       
@@ -277,7 +277,7 @@ if __name__ == "__main__":
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
    
         embedding_model = vit_b_16(weights=ViT_B_16_Weights.DEFAULT).to(device)
-        embedding_model.heads = nn.Identity()  # 분류 헤드 제거
+        embedding_model.heads = nn.Identity()  
         embedding_model.eval()
         
 

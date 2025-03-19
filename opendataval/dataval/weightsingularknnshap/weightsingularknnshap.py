@@ -70,7 +70,7 @@ class weightsingularKNNShapley(DataEvaluator, ModelLessMixin):
         """
         n = len(self.x_train)
         m = len(self.x_valid)
-        self.d = self.x_train.shape[1]  # 입력 feature의 차원
+        self.d = self.x_train.shape[1] 
         x_train, x_valid = self.embeddings(self.x_train, self.x_valid)
 
         # Computes Euclidean distance by computing crosswise per batch
@@ -99,44 +99,43 @@ class weightsingularKNNShapley(DataEvaluator, ModelLessMixin):
                 + min(self.k_neighbors, i + 1) / (self.k_neighbors * (i + 1))
                 * (self.match(y_train_sort[i]) - self.match(y_train_sort[i + 1]))
             )
-                # === 추가 알고리즘: 각 training sample의 influence 계산 ===
+                
         
-        # 1. 데이터 정규화
+        
         x_mean = torch.mean(self.x_train, dim=0, keepdim=True)          # (1, d)
         x_std = torch.std(self.x_train, dim=0, keepdim=True) + 1e-6       # (1, d)
         x_norm = (self.x_train - x_mean) / x_std                         # (n, d)
 
-        # 2. 공분산 행렬 Σ 계산: (d, d)
+        
         Sigma = (x_norm.t() @ x_norm) / n
 
-        # 3. SVD를 통한 singular value 및 vector 산출
+        
         U, S, _ = torch.linalg.svd(Sigma)
-        sigma_max = S[0]            # 최대 singular value
-        sigma_min = S[-1]           # 최소 singular value
+        sigma_max = S[0]            
+        sigma_min = S[-1]           
         u_max = U[:, 0]             # (d,)
         u_min = U[:, -1]            # (d,)
 
-        # 4. 각 샘플에 대한 u_max, u_min 상의 투영값 계산
+        
         proj_max = torch.matmul(x_norm, u_max)  # (n,)
         proj_min = torch.matmul(x_norm, u_min)  # (n,)
 
-        # 5. 각 샘플의 δ 값 계산: δ_max, δ_min
+        
         # delta_max =  -(proj_max ** 2) / self.n    # (n,)
         delta_max = -(proj_max ** 2) / n + torch.tensor(sigma_max, device=sigma_max.device)/ n * self.weight# (n,)
         delta_min =  -(proj_min ** 2) / n    # (n,)
         # delta_min = -(proj_min ** 2) / self.n + torch.tensor(sigma_min, device=sigma_min.device)  # (n,)
 
-        # 6. 상수 항 계산
+        
         d_val = float(self.d)
         factor1 = (sigma_max * math.sqrt(d_val) + math.sqrt(d_val**2 - d_val)) / (sigma_min ** 2)
         factor2 = math.sqrt(d_val) / sigma_min
 
-        # 7. 최종 influence tensor 계산
+        
         scaling_factor_1 =  1 / math.sqrt(self.d ** 2 - self.d) 
         singular_value_term = (-factor1 * delta_min + factor2 * delta_max) * scaling_factor_1  # (n,)
 
-        # === 두 값 결합 ===
-        # 최종 데이터 값은 LAVA gradient와 influence를 합산한 값으로 결정
+        
         # final_data_values = train_gradient + singular_value_term
         scaling_factor_2 = score.mean(axis=1).abs().mean() / singular_value_term.abs().mean() * self.epsilon_weight
         self.data_values = (score.mean(axis=1) + singular_value_term * scaling_factor_2).detach().numpy()

@@ -126,37 +126,37 @@ class singularDataOob(DataEvaluator, ModelMixin):
             Predicted data values/selection for every training data point
         """
         self.data_values = np.zeros(self.num_points)
-                # 1. 데이터 정규화
+                
         x_mean = torch.mean(self.x_train, dim=0, keepdim=True)          # (1, d)
         x_std = torch.std(self.x_train, dim=0, keepdim=True) + 1e-6       # (1, d)
         x_norm = (self.x_train - x_mean) / x_std                         # (n, d)
 
-        # 2. 공분산 행렬 Σ 계산: (d, d)
+        
         Sigma = (x_norm.t() @ x_norm) / self.num_points
 
-        # 3. SVD를 통한 singular value 및 vector 산출
+        
         U, S, _ = torch.linalg.svd(Sigma)
-        sigma_max = S[0]            # 최대 singular value
-        sigma_min = S[-1]           # 최소 singular value
-        u_max = U[:, 0]             # (d,)
-        u_min = U[:, -1]            # (d,)
+        sigma_max = S[0]           
+        sigma_min = S[-1]          
+        u_max = U[:, 0]            
+        u_min = U[:, -1]           
 
-        # 4. 각 샘플에 대한 u_max, u_min 상의 투영값 계산
+        
         proj_max = torch.matmul(x_norm, u_max)  # (n,)
         proj_min = torch.matmul(x_norm, u_min)  # (n,)
 
-        # 5. 각 샘플의 δ 값 계산: δ_max, δ_min
+        
         # delta_max =  -(proj_max ** 2) / self.n    # (n,)
         delta_max = -(proj_max ** 2) / self.num_points + torch.tensor(sigma_max, device=sigma_max.device)/ self.num_points # (n,)
         delta_min =  -(proj_min ** 2) / self.num_points    # (n,)
         # delta_min = -(proj_min ** 2) / self.n + torch.tensor(sigma_min, device=sigma_min.device)  # (n,)
 
-        # 6. 상수 항 계산
+        
         d_val = float(self.d)
         factor1 = (sigma_max * math.sqrt(d_val) + math.sqrt(d_val**2 - d_val)) / (sigma_min ** 2)
         factor2 = math.sqrt(d_val) / sigma_min
 
-        # 7. 최종 influence tensor 계산
+        
         scaling_factor =  1 / math.sqrt(self.d ** 2 - self.d)
         singular_value_term = (-factor1 * delta_min + factor2 * delta_max) * scaling_factor  # (n,)
         
@@ -169,7 +169,7 @@ class singularDataOob(DataEvaluator, ModelMixin):
             oob_labels = self.y_train[i].expand((len(indices), *self.label_dim))
             eval_result = self.evaluate(oob_labels, self.oob_pred[indices])
             
-            # eval_result이나 singular_value_term이 Tensor가 아닐 경우를 대비
+            
             if isinstance(eval_result, torch.Tensor):
                 eval_mean_abs = eval_result.abs().mean()
             else:
@@ -180,13 +180,13 @@ class singularDataOob(DataEvaluator, ModelMixin):
             else:
                 singular_mean_abs = abs(singular_value_term)
 
-            # 스케일링 팩터 계산
+            
             scale_factor = eval_mean_abs / singular_mean_abs if singular_mean_abs != 0 else 0
             
-            # singular_value_term을 스케일링
+            
             adjusted_singular_value = singular_value_term[i] * scale_factor
             
-            # 결과 저장
+            
             self.data_values[i] = eval_result + adjusted_singular_value
 
         return self.data_values

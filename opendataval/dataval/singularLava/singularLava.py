@@ -39,7 +39,7 @@ class SingularLavaEvaluator(DataEvaluator, ModelLessMixin):
         torch.manual_seed(check_random_state(random_state).tomaxint())
         self.embedding_model = embedding_model
         self.device = device
-        # self.x_train, self.x_valid, self.y_train, self.y_valid는 외부에서 할당되어야 함
+        
         
 
     def train_data_values(self, *args, **kwargs):
@@ -59,8 +59,8 @@ class SingularLavaEvaluator(DataEvaluator, ModelLessMixin):
                 p=2,
                 device=self.device.type,
             )
-        self.n = self.x_train.shape[0]  # training 데이터 수
-        self.d = self.x_train.shape[1]  # 입력 feature의 차원
+        self.n = self.x_train.shape[0]  
+        self.d = self.x_train.shape[1]  
         x_train, x_valid = self.embeddings(self.x_train, self.x_valid)
         dist = DatasetDistance(
             x_train=x_train,
@@ -88,51 +88,49 @@ class SingularLavaEvaluator(DataEvaluator, ModelLessMixin):
         np.ndarray
             Final data values for each training input data point.
         """
-        # === 기존 LAVA 방법론: dual solution gradient 계산 ===
-        f1k = self.dual_sol[0].squeeze()  # dual solution에서 얻은 값, shape: (n+1,)
-        num_points = f1k.shape[0] - 1   # training 데이터 수 (추가된 bias term 고려)
+        
+        f1k = self.dual_sol[0].squeeze()  
+        num_points = f1k.shape[0] - 1   
         train_gradient = f1k * (1 + 1 / num_points) - f1k.sum() / num_points
-        # 부호를 뒤집어 낮은 값이 손실성이 크도록 함
+        
         train_gradient = -1 * train_gradient
 
-        # === 추가 알고리즘: 각 training sample의 influence 계산 ===
-        # 1. 데이터 정규화
+        
         x_mean = torch.mean(self.x_train, dim=0, keepdim=True)          # (1, d)
         x_std = torch.std(self.x_train, dim=0, keepdim=True) + 1e-6       # (1, d)
         x_norm = (self.x_train - x_mean) / x_std                         # (n, d)
 
-        # 2. 공분산 행렬 Σ 계산: (d, d)
+        
         Sigma = (x_norm.t() @ x_norm) / self.n
 
-        # 3. SVD를 통한 singular value 및 vector 산출
+        
         U, S, _ = torch.linalg.svd(Sigma)
-        sigma_max = S[0]            # 최대 singular value
-        sigma_min = S[-1]           # 최소 singular value
-        u_max = U[:, 0]             # (d,)
-        u_min = U[:, -1]            # (d,)
+        sigma_max = S[0]            
+        sigma_min = S[-1]           
+        u_max = U[:, 0]             
+        u_min = U[:, -1]            
 
-        # 4. 각 샘플에 대한 u_max, u_min 상의 투영값 계산
+        
         proj_max = torch.matmul(x_norm, u_max)  # (n,)
         proj_min = torch.matmul(x_norm, u_min)  # (n,)
 
-        # 5. 각 샘플의 δ 값 계산: δ_max, δ_min
+        
         # delta_max =  -(proj_max ** 2) / self.n    # (n,)
         delta_max = -(proj_max ** 2) / self.n + torch.tensor(sigma_max, device=sigma_max.device)/self.n
         # delta_min =  -(proj_min ** 2) / self.n    # (n,)
         delta_min = -(proj_min ** 2) / self.n #+ torch.tensor(sigma_min, device=sigma_min.device)  # (n,)
 
-        # 6. 상수 항 계산
+        
         d_val = float(self.d)
         factor1 = (sigma_max * math.sqrt(d_val) + math.sqrt(d_val**2 - d_val)) / (sigma_min ** 2)
         factor2 = math.sqrt(d_val) / sigma_min
 
-        # 7. 최종 influence tensor 계산
+        
         scaling_factor =  1 / math.sqrt(self.d ** 2 - self.d)
         singular_value_term = (-factor1 * delta_min + factor2 * delta_max) * scaling_factor  # (n,)
 
-        # === 두 값 결합 ===
-        # 최종 데이터 값은 LAVA gradient와 influence를 합산한 값으로 결정
+        
         final_data_values = train_gradient + singular_value_term
 
-        # numpy 배열로 변환하여 반환 (tensor 크기 및 device 고려)
+        
         return final_data_values.cpu().numpy()
