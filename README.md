@@ -6,6 +6,7 @@ This repository implements the method proposed in our paper, based on the [OpenD
 - Place required datasets as follows:
     - CIFAR-10, VLCS: in the `/data` directory
     - CIFAR-10-C: in the `/data_files` directory
+    - Amazon Reviews, ImageNet, DomainNet: Use embedding data located in the directory specified by the `--embedding_dir` argument when running the code
 
 ## Running Experiments
 - Experiment scripts are located in `examples/CIFAR10` and `examples/VLCS`.
