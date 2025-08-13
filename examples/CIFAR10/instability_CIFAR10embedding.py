@@ -61,7 +61,7 @@ def set_seed(seed: int = 42):
     torch.backends.cudnn.benchmark = False
     np.random.seed(seed)
     random.seed(seed)
-    # 추가적인 설정
+    
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 

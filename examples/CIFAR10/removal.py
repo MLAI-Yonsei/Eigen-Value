@@ -267,7 +267,7 @@ def compute_corrupted_embeddings_all(dataroot, level=5, tesize=10000):
         npy_path = os.path.join(dataroot, f'{corruption}.npy')
         teset_raw = np.load(npy_path)
         teset_raw = teset_raw[(level-1)*tesize: level*tesize]
-        # CIFAR10 데이터셋 객체 생성 후, raw data로 대체
+        
         teset = torchvision.datasets.CIFAR10(root=dataroot, train=False, download=False, transform=transform)
         teset.data = teset_raw
         corrupted_loader = torch.utils.data.DataLoader(teset, batch_size=128, shuffle=False, num_workers=0)

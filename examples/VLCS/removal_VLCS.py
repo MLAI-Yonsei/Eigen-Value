@@ -172,8 +172,7 @@ def _is_valid_image( path_):
         return True
     except:
         return False
-# ---------------------------
-# 메인 실행부
+
 
 if __name__ == "__main__":
     set_seed()
@@ -275,7 +274,7 @@ if __name__ == "__main__":
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         embedding_model = vit_b_16(weights=ViT_B_16_Weights.DEFAULT).to(device)
-        embedding_model.heads = nn.Identity()  # 분류 헤드 제거
+        embedding_model.heads = nn.Identity() 
         embedding_model.eval()
         
         
