@@ -37,8 +37,8 @@ python ./examples/Amazon/datavaluation_Amazon.py --embedding_dir /your/path/embe
 ### Data Removal
 Using the data value files generated in the Data Valuation step, the data removal experiment is conducted for each method. Based on the computed data values, the top 50% (highest-value samples) are removed, and a logistic regression model is trained only on the remaining data.
 ```bash
-python ./examples/CIFAR10/removal.py --ascending True --num 500
-python ./examples/Amazon/removal.py --ascending True --num 500 --datavalues /your/path/datavalues/{domain}/save_dataval.csv --save_dir /your/path/removal/{domain}
+python ./examples/CIFAR10/removal.py --ascending true --num 500
+python ./examples/Amazon/removal.py --ascending true --num 500 --datavalues /your/path/datavalues/{domain}/save_dataval.csv --save_dir /your/path/removal/{domain}
 
 ```
 
