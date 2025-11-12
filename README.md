@@ -15,6 +15,7 @@ This repository implements the method proposed in our paper, based on the [OpenD
     - CIFAR-10-C: in the `/data_files` directory
     - For Amazon Reviews, ImageNet, and DomainNet, we first compute the embeddings and save them as `.pt` files. During experiments, these embedding files must be provided via the `--embedding_dir` argument.
     - Amazon Reviews uses the `RoBERTa-base` model, while ImageNet and DomainNet use the `ViT-B/16 model`.
+        - For these datasets, the embeddings must be computed in advance using the models mentioned above before performing the experiments.
     - All experiments use the train split of each dataset, and performance is also measured using randomly sampled data from the train split of the target domain (i.e., the domain not used for training).
     - To ensure reproducibility, we set the random seed to `42`.
     - Using the given model and dataset, the embedding file and label file must be precomputed and saved as `.pt` files.
