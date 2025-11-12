@@ -21,7 +21,7 @@ This repository implements the method proposed in our paper, based on the [OpenD
 
 
 ## Running Experiments
-- Experiment scripts are located in `examples/{dataset}`.
+- Experiment codes are located in `examples/{dataset}`.
 - After placing the data in the correct directories, run the relevant scripts in these folders to reproduce the results.
 
 ### Data Valuation
@@ -30,10 +30,12 @@ This script computes the data value for each sample according to the chosen data
 
 ```bash
 python ./examples/CIFAR10/datavaluation_CIFAR10embedding.py
-
-# because we use embedding file of ImageNet, Amazon, DomainNet, arguments are different
 python ./examples/Amazon/datavaluation_Amazon.py --embedding_dir /your/path/embedding --output_dir /your/path/datavalues
 ```
+> [!NOTE]
+> Due to the presence of multiple domains and the use of precomputed embedding files in ImageNet, Amazon, and DomainNet, the execution script and arguments differ from those used for CIFAR-10, while the underlying procedure remains identical.
+> The subsequent experiments follow the same configuration to ensure consistency across datasets.
+
 ### Data Removal
 Using the data value files generated in the Data Valuation step, the data removal experiment is conducted for each method. Based on the computed data values, the top 50% (highest-value samples) are removed, and a logistic regression model is trained only on the remaining data.
 ```bash
@@ -47,7 +49,7 @@ Similarly, using the data values computed during Data Valuation, the point addit
 By adjusting the `num` argument, you can choose how many top-valued samples to add to a fixed dataset.
 ```bash
 python ./examples/CIFAR10/removal.py --ascending false --num 100
-python .examples/Amazon/point_addition_Amazon.py --ascending false --plus_n 100 --datavalues /your/path/datavalues/{domain}/save_dataval.csv --save_dir /your/path/point_addition/{domain}
+python ./examples/Amazon/point_addition_Amazon.py --ascending false --plus_n 100 --datavalues /your/path/datavalues/{domain}/save_dataval.csv --save_dir /your/path/point_addition/{domain}
 ```
 
 ### Instability Ranking
