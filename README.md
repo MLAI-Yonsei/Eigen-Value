@@ -30,7 +30,9 @@ To begin data valuation for each sample, run the following code.
 This script computes the data value for each sample according to the chosen data valuation method in code file, splits them by data type, and saves the resulting values into CSV files.
 
 ```bash
+# CIFAR-10 
 python ./examples/CIFAR10/datavaluation_CIFAR10embedding.py
+# Amzain Review
 python ./examples/Amazon/datavaluation_Amazon.py --embedding_dir /your/path/embedding --output_dir /your/path/datavalues
 ```
 > [!NOTE]
@@ -40,7 +42,9 @@ python ./examples/Amazon/datavaluation_Amazon.py --embedding_dir /your/path/embe
 ### Data Removal
 Using the data value files generated in the Data Valuation step, the data removal experiment is conducted for each method. Based on the computed data values, the top 50% (highest-value samples) are removed, and a logistic regression model is trained only on the remaining data.
 ```bash
+# CIFAR-10 
 python ./examples/CIFAR10/removal.py --ascending true --num 500
+# Amzain Review
 python ./examples/Amazon/removal.py --ascending true --num 500 --datavalues /your/path/datavalues/{domain}/save_dataval.csv --save_dir /your/path/removal/{domain}
 
 ```
@@ -49,12 +53,14 @@ python ./examples/Amazon/removal.py --ascending true --num 500 --datavalues /you
 Similarly, using the data values computed during Data Valuation, the point addition experiment is performed.
 By adjusting the `num` argument, you can choose how many top-valued samples to add to a fixed dataset.
 ```bash
+# CIFAR-10 
 python ./examples/CIFAR10/removal.py --ascending false --num 100
+# Amzain Review
 python ./examples/Amazon/point_addition_Amazon.py --ascending false --plus_n 100 --datavalues /your/path/datavalues/{domain}/save_dataval.csv --save_dir /your/path/point_addition/{domain}
 ```
 
 ### Instability Ranking
-This experiment was conducted only on CIFAR-10.
+This experiment was conducted only on `CIFAR-10`.
 During Data Valuation, a specific subset is fixed while other parts of the dataset are randomly varied.
 The goal is to measure how the data values of the fixed subset change under different conditions.
 The same code is executed multiple times with different seeds (for different parts of dataset are sampled).
