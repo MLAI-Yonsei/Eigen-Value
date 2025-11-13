@@ -32,7 +32,7 @@ This script computes the data value for each sample according to the chosen data
 ```bash
 # CIFAR-10 
 python ./examples/CIFAR10/datavaluation_CIFAR10embedding.py
-# Amzain Review
+# Amzon Review
 python ./examples/Amazon/datavaluation_Amazon.py --embedding_dir /your/path/embedding --output_dir /your/path/datavalues
 ```
 > [!NOTE]
@@ -44,7 +44,7 @@ Using the data value files generated in the Data Valuation step, the data remova
 ```bash
 # CIFAR-10 
 python ./examples/CIFAR10/removal.py --ascending true --num 500
-# Amzain Review
+# Amzon Review
 python ./examples/Amazon/removal.py --ascending true --num 500 --datavalues /your/path/datavalues/{domain}/save_dataval.csv --save_dir /your/path/removal/{domain}
 
 ```
@@ -55,7 +55,7 @@ By adjusting the `num` argument, you can choose how many top-valued samples to a
 ```bash
 # CIFAR-10 
 python ./examples/CIFAR10/removal.py --ascending false --num 100
-# Amzain Review
+# Amzon Review
 python ./examples/Amazon/point_addition_Amazon.py --ascending false --plus_n 100 --datavalues /your/path/datavalues/{domain}/save_dataval.csv --save_dir /your/path/point_addition/{domain}
 ```
 
